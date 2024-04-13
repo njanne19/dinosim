@@ -45,7 +45,7 @@ class DINO:
         # with a gain of 3dB will have a half-power beamwidth of 65 degrees. 
         # These values are hardcoded, as they define the shape of the radiation pattern.
         # As it changes with gain value. 
-        beamwidth_3dB = 65
+        beamwidth_3dB = 65 # degrees
         gain_3dB = 3    
         K = beamwidth_3dB * np.sqrt(gain_3dB)
             
@@ -57,8 +57,8 @@ class DINO:
         # Get gains for all these values of theta. 
         pattern = self.antenna_gain_dB * np.exp(-0.5 * (theta / sigma) ** 2)
         
-        if not degrees: 
-            theta = np.radians(theta) # Return theta in radians
+        if degrees: 
+            theta = np.degrees(theta) # Return theta in radians
         
         return theta, pattern
     
@@ -87,9 +87,9 @@ class DINO:
         theta, pattern_dB = self.get_absolute_radiation_pattern_dB() # No radians option available.
         plt.figure()
         ax = plt.subplot(111, polar=True)
-        ax.plot(theta, pattern_dB)
-        ax.set_title(f"Absolute Radiation Pattern (dB) for {self.name}, Gain = {self.antenna_gain_dB} dB")
-        ax.set_ylim(-40, 3*self.antenna_gain_dB)
+        ax.plot(np.radians(theta), pattern_dB, linewidth=2)
+        ax.set_title(f"Antenna Gain (dB) v.s. Azimuth (theta), G0 = {self.antenna_gain_dB} dB")
+        ax.set_ylim(-40, self.antenna_gain_dB + 5)
         ax.grid(True)
     
     def get_absolute_gain(self, theta, degrees=True): 
@@ -108,10 +108,12 @@ class DINO:
         antenna_beamwidth = K / np.sqrt(self.antenna_gain_dB)
         sigma = np.radians(antenna_beamwidth) / 2
         
-        if not degrees: 
-            theta = np.degrees(theta) # Theta is passed in as radians 
+        if degrees: 
+            theta = np.radians(theta) # Theta is passed in as degrees 
         
         return self.antenna_gain_dB * np.exp(-0.5 * (theta / sigma) ** 2)
     
     def get_absolute_gain_dB(self, theta, degrees=True): 
-        return 10 * np.log10(self.get_absolute_gain(theta, degrees=degrees))
+        absolute_gain = self.get_absolute_gain(theta, degrees=degrees)
+
+        return 10 * np.log10(absolute_gain)
